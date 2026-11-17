@@ -1,0 +1,51 @@
+services:
+  app:
+    build: .
+    container_name: forgecost-app
+    ports:
+      - "8080:8000"
+    environment:
+      APP_NAME: "Contractor Job Costing SaaS"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8080
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: forgecost
+      DB_USERNAME: forgecost
+      DB_PASSWORD: secret
+      MODULE_LABOR: "true"
+      MODULE_MATERIALS: "true"
+      MODULE_CHANGE_ORDERS: "true"
+      MODULE_MARGINS: "true"
+      MODULE_ESTIMATES: "true"
+      MODULE_CREW_TIMESHEETS: "true"
+      MODULE_VENDOR_POS: "true"
+      MODULE_AI_COST_INSIGHTS: "true"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - mysql
+    command: >
+      sh -c "composer install --no-interaction &&
+             php artisan key:generate --force &&
+             php artisan migrate --force &&
+             php artisan db:seed --force &&
+             php artisan serve --host=0.0.0.0 --port=8000"
+
+  mysql:
+    image: mysql:8.4
+    container_name: forgecost-mysql
+    environment:
+      MYSQL_DATABASE: forgecost
+      MYSQL_USER: forgecost
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+    ports:
+      - "3307:3306"
+    volumes:
+      - forgecost_mysql:/var/lib/mysql
+
+volumes:
+  forgecost_mysql:
